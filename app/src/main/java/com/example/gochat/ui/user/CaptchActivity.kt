@@ -10,9 +10,11 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.gochat.databinding.ActivityCaptchBinding
 import com.example.gochat.viewmodel.CaptchViewModel
 import com.example.myapp.ui.viewmodel.RegisterViewModel
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class CaptchActivity : AppCompatActivity() {
@@ -53,15 +55,26 @@ class CaptchActivity : AppCompatActivity() {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
-        binding.tvResend.setOnClickListener {
-            resetCountDown()
-            resviewModel.register(email){isSucess->
-                if(isSucess){
-                    Toast.makeText(this, "验证码已重新发送至 $email", Toast.LENGTH_SHORT).show()
-                }else{
-                    Toast.makeText(this, "服务器错误", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            resviewModel.isProcessing.collect { isProcessing ->
+                binding.tvResend.isEnabled = !isProcessing // 在处理请求时禁用按钮
+            }
+        }
+
+        lifecycleScope.launch {
+            resviewModel.result.collect { result ->
+                result?.let {
+                    if (it) {
+                        Toast.makeText(this@CaptchActivity, "验证码已重新发送至 $email", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@CaptchActivity, "服务器错误", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
+        }
+        binding.tvResend.setOnClickListener {
+            resetCountDown()
+            resviewModel.register(email)
         }
     }
 

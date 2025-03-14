@@ -1,24 +1,40 @@
 package com.example.gochat.data.repository
 
-import android.R
 import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
+import android.provider.Settings.Global.putString
 import android.util.Log
+import com.example.gochat.api.LoginRequest
+import com.example.gochat.api.LoginResponse
+import com.example.gochat.api.PasswdchangeRequest
 import com.example.gochat.api.PasswdforgotRequest
 import com.example.gochat.api.RegisterRequest
 import com.example.gochat.api.UseraddRequest
 import com.example.gochat.api.VerifyRequest
 import com.example.gochat.data.ApiService
+import com.example.gochat.data.database.dao.AuthTokenDao
 import com.example.gochat.data.database.dao.UserDao
+import com.example.gochat.data.database.dao.UserInfoDao
+import com.example.gochat.data.database.entity.AuthToken
 import com.example.gochat.data.database.entity.User
+import com.example.gochat.data.database.entity.UserInfo
+import com.example.gochat.utils.TokenManager
+import io.jsonwebtoken.Jwts
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import retrofit2.Response
+import java.time.Instant
+import kotlin.math.log
 
 class UserRepository(
     private val userDao: UserDao, // 数据库操作
-    private val apiService: ApiService // 网络请求
+    private val authToken: AuthTokenDao,
+    private val userInfoDao: UserInfoDao,
+    private val apiService: ApiService, // 网络请求
+    private val context: Context
 ) {
 
     /**
@@ -134,9 +150,10 @@ class UserRepository(
             return "保存失败: ${e.message}"
         }
     }
-    suspend fun passwdForgot(username: String,email: String): String{
-        val req= PasswdforgotRequest(username,email)
-        val rep =apiService.passwdForgot(req)
+
+    suspend fun passwdForgot(username: String, email: String): String {
+        val req = PasswdforgotRequest(username, email)
+        val rep = apiService.passwdForgot(req)
         val bodyString = if (rep.isSuccessful) {
             return "true"
         } else {
@@ -144,9 +161,111 @@ class UserRepository(
         }
         val jsonObject = JSONObject(bodyString)
         val outcome = jsonObject.optString("message", "")
-        if(outcome==""){
+        if (outcome == "") {
             return "服务器错误"
         }
         return outcome
+    }
+
+    suspend fun passwdChange(email: String, usernam: String, newpasswd: String): String {
+        val request = PasswdchangeRequest(email, usernam, newpasswd)
+        val rep = apiService.passwdChange(request)
+        val bodyString = if (rep.isSuccessful) {
+            return "true"
+        } else {
+            rep.errorBody()?.string() ?: ""
+        }
+        val jsonObject = JSONObject(bodyString)
+        val outcome = jsonObject.optString("message", "")
+        if (outcome == "") {
+            return "服务器错误"
+        }
+        return outcome
+    }
+
+    /**
+     * 用户登录
+     */
+    suspend fun login(account: String, password: String): Result<LoginResponse> {
+        return try {
+            val request = LoginRequest(account, password)
+            val response = apiService.login(request)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    val user = User(
+                        username = account,
+                        password = password,
+                        email = body.user?.email ?: "",
+                        avatarUrl = body.user?.avatarUrl
+                    )
+                    userDao.insert(user)
+                    val userId = userDao.getUserByUsername(account)?.id
+                        ?: return Result.failure(Exception("无法获取用户 ID，请稍后重试"))
+
+                    val userInfo = UserInfo(
+                        id = userId.toLong(),
+                        displayName = body.userInfo?.displayName ?: body.user?.username,
+                        email = body.userInfo?.email ?: body.user?.email ?: "",
+                        avatarUrl = body.user?.avatarUrl,
+                        bio = body.userInfo?.bio,
+                        gender = body.userInfo?.gender ?: "unspecified",
+                        birthDate = body.userInfo?.birthDate?.let {
+                            java.time.LocalDate.parse(it.substring(0, 10))
+                        },
+                        phoneNumber = body.userInfo?.phoneNumber,
+                        location = body.userInfo?.location,
+                        lastLoginTime = Instant.now().toString()
+                    )
+                    userInfoDao.insert(userInfo)
+                    saveTokens(userId, body.accessToken ?: "", body.refreshToken ?: "")
+                    Result.success(body)
+                } else {
+                    Result.failure(Exception("服务器错误"))
+                }
+            } else {
+                val bodyString = response.errorBody()?.string() ?: "{}"
+                val jsonObject = JSONObject(bodyString)
+                val message = jsonObject.optString("message", "未知错误")
+                Result.failure(Exception(message))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("网络错误：${e.localizedMessage ?: "未知错误"}"))
+        }
+    }
+
+    private suspend fun saveTokens(userId: Int, accessToken: String, refreshToken: String) {
+        // 使用 TokenManager 保存到 SharedPreferences
+        TokenManager.saveTokens(context, userId, accessToken, refreshToken)
+        Log.d("UserRepository", "Tokens saved for userId: $userId, accessToken: $accessToken, refreshToken: $refreshToken")
+        val savedAccessToken = TokenManager.getAccessToken(context)
+        val savedRefreshToken = TokenManager.getRefreshToken(context)
+        val savedUserId = TokenManager.getUserId(context)
+        Log.d("UserRepository", "Verified saved tokens: accessToken=$savedAccessToken, refreshToken=$savedRefreshToken, userId=$savedUserId")
+    }
+
+    // 计算过期时间（可选）
+    private fun calculateExpirationTime(accessToken: String): Long? {
+        return try {
+            val claims = Jwts.parser()
+                .setSigningKey("your-secret-key-here".toByteArray()) // 与后端一致
+                .parseClaimsJws(accessToken)
+                .body
+            claims.expiration?.time
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Failed to parse token expiration: $e")
+            null
+        }
+    }
+
+
+    private fun isValidLoginResponse(response: LoginResponse): Boolean {
+        return response.status == "true" &&
+                !response.accessToken.isNullOrBlank() &&
+                !response.refreshToken.isNullOrBlank()
+    }
+    suspend fun getLatestToken(): AuthToken? {
+        return authToken.getLatestToken()
     }
 }

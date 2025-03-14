@@ -12,6 +12,7 @@ import com.example.gochat.R
 import com.example.gochat.api.UseraddRequest
 import com.example.gochat.databinding.ActivityUseraddBinding
 import com.example.gochat.ui.main.HomeActivity
+import com.example.gochat.utils.setDebounceClickListener
 import com.example.gochat.viewmodel.UseraddViewModel
 import kotlinx.coroutines.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -43,27 +44,28 @@ class UserinfoaddActivity : AppCompatActivity() {
 
         setupUsernameWatcher()
 
-        binding.btnConfirm.setOnClickListener {
+        binding.btnConfirm.setDebounceClickListener {
             val username = binding.etUsername.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
             val confirmPassword = binding.etConfirmPassword.text.toString().trim()
 
             if (!validateInputs(username, password, confirmPassword)) {
-                return@setOnClickListener
+                return@setDebounceClickListener
             }
 
-            binding.btnConfirm.isEnabled = false
             coroutineScope.launch {
                 val request = UseraddRequest(email, username, password)
                 val saveResult = viewModel.saveUserInfo(request, avatarUri, contentResolver)
                 if (saveResult == "true") {
                     Toast.makeText(this@UserinfoaddActivity, "用户信息已保存", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this@UserinfoaddActivity, HomeActivity::class.java)
+                    val intent = Intent(this@UserinfoaddActivity, HomeActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
                     startActivity(intent)
+                    finish()
                 } else {
                     Toast.makeText(this@UserinfoaddActivity, saveResult, Toast.LENGTH_SHORT).show()
                 }
-                binding.btnConfirm.isEnabled = true
             }
         }
     }

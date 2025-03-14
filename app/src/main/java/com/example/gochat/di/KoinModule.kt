@@ -1,10 +1,13 @@
 package com.example.myapp.di
 
 import android.provider.Settings
+import com.example.gochat.api.PasswdchangeRequest
 import com.example.gochat.data.ApiService
 import com.example.gochat.data.database.AppDatabase
 import com.example.gochat.data.repository.UserRepository
 import com.example.gochat.viewmodel.CaptchViewModel
+import com.example.gochat.viewmodel.LoginViewModel
+import com.example.gochat.viewmodel.PasswdchangeViewModel
 import com.example.gochat.viewmodel.PasswdforgotViewModel
 import com.example.gochat.viewmodel.UseraddViewModel
 import com.example.myapp.ui.viewmodel.RegisterViewModel
@@ -27,6 +30,14 @@ val appModule = module {
         get<AppDatabase>().userDao()
     }
 
+    single { // 添加 AuthTokenDao
+        get<AppDatabase>().authTokenDao()
+    }
+
+    single { // 新增 UserInfoDao
+        get<AppDatabase>().userInfoDao()
+    }
+
     // Retrofit
     single {
         val logging = HttpLoggingInterceptor().apply {
@@ -36,7 +47,7 @@ val appModule = module {
             .addInterceptor(logging)
             .build()
         Retrofit.Builder()
-            .baseUrl("http://10.20.126.87:8000/") // 替换为实际的后端 URL
+            .baseUrl("http://10.22.75.168:8000/") // 替换为实际的后端 URL
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -45,7 +56,7 @@ val appModule = module {
 
     // Repository
     single {
-        UserRepository(get(), get())
+        UserRepository(get(), get(),get(),get(),androidContext())
     }
 
     // Device ID（提取为单独的 single 定义，避免重复计算）
@@ -66,5 +77,11 @@ val appModule = module {
     }
     viewModel {
         PasswdforgotViewModel(get())
+    }
+    viewModel {
+        PasswdchangeViewModel(get())
+    }
+    viewModel {
+        LoginViewModel(get(),get())
     }
 }
