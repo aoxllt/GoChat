@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="24dp">
+    <ImageButton
+        android:id="@+id/backbtn"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerInside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/back" />
+
+    <!-- 主内容 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+
+
+        <!-- 标题部分 -->
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="输入验证码"
+            android:textSize="20sp"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/tv_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#888888"
+            android:layout_marginBottom="32dp"
+            android:gravity="center"/>
+
+        <!-- 验证码输入框 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="32dp">
+
+            <EditText
+                android:id="@+id/et_code_1"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:inputType="number"
+                android:maxLength="1"
+                android:background="@drawable/bg_code_input"
+                android:textColor="#333333"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:layout_marginEnd="12dp"/>
+
+            <EditText
+                android:id="@+id/et_code_2"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:inputType="number"
+                android:maxLength="1"
+                android:background="@drawable/bg_code_input"
+                android:textColor="#333333"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:layout_marginEnd="12dp"/>
+            <EditText
+                android:id="@+id/et_code_3"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:inputType="number"
+                android:maxLength="1"
+                android:background="@drawable/bg_code_input"
+                android:textColor="#333333"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:layout_marginEnd="12dp"/>
+            <EditText
+                android:id="@+id/et_code_4"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:inputType="number"
+                android:maxLength="1"
+                android:background="@drawable/bg_code_input"
+                android:textColor="#333333"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:layout_marginEnd="12dp"/>
+        </LinearLayout>
+
+        <!-- 重发按钮 -->
+        <TextView
+            android:id="@+id/tv_resend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="#888888"
+            android:layout_marginTop="24dp"
+            android:clickable="false"
+            android:focusable="false"/>
+    </LinearLayout>
+</LinearLayout>
