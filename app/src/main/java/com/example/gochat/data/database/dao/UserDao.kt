@@ -3,6 +3,7 @@ package com.example.gochat.data.database.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.example.gochat.data.database.entity.User
 import com.example.gochat.data.database.entity.enums.UserStatus
 
@@ -29,4 +30,7 @@ interface UserDao {
     // 新增：检查是否存在活跃用户
     @Query("SELECT * FROM users WHERE status = :status LIMIT 1")
     suspend fun getActiveUser(status: UserStatus = UserStatus.ACTIVE): User?
+
+    @Update
+    suspend fun update(user: User)
 }

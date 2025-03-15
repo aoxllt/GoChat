@@ -6,6 +6,8 @@ buildscript {
         maven { url = uri("https://maven.aliyun.com/nexus/content/groups/public/") }
         maven { url = uri("https://maven.aliyun.com/nexus/content/repositories/google") }
         maven { url = uri("https://maven.aliyun.com/nexus/content/repositories/gradle-plugin") }
+        google()
+        mavenCentral()
     }
 }
 

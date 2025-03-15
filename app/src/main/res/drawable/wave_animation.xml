@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:duration="150">
+        <shape>
+            <solid android:color="#FF4081" />
+            <corners android:radius="10dp" />
+            <size android:width="100dp" android:height="10dp" />
+        </shape>
+    </item>
+    <item android:duration="150">
+        <shape>
+            <solid android:color="#3F51B5" />
+            <corners android:radius="10dp" />
+            <size android:width="100dp" android:height="10dp" />
+        </shape>
+    </item>
+    <item android:duration="150">
+        <shape>
+            <solid android:color="#00E676" />
+            <corners android:radius="10dp" />
+            <size android:width="100dp" android:height="10dp" />
+        </shape>
+    </item>
+</animation-list>

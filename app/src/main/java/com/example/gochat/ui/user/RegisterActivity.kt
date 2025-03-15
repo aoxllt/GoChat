@@ -8,7 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.gochat.MainActivity
 import com.example.gochat.databinding.ActivityRegisterBinding
-import com.example.gochat.utils.setDebounceClickListener // 假设你已有此扩展函数
+import com.example.gochat.utils.LoadingUtil
+import com.example.gochat.utils.setDebounceClickListener
+import com.example.myapp.ui.viewmodel.RegisterState
 import com.example.myapp.ui.viewmodel.RegisterViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -44,17 +46,29 @@ class RegisterActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.isProcessing.collect { isProcessing ->
                 binding.regbtn.isEnabled = !isProcessing // 在处理请求时禁用按钮
+                if (isProcessing) {
+                    LoadingUtil.showLoading(this@RegisterActivity) // 显示加载动画
+                } else {
+                    LoadingUtil.hideLoading(this@RegisterActivity) // 隐藏加载动画
+                }
             }
         }
 
         lifecycleScope.launch {
-            viewModel.result.collect { result ->
-                result?.let {
-                    if (it) { // Boolean 类型，true 表示成功
-                        Toast.makeText(this@RegisterActivity, "验证码已发送", Toast.LENGTH_SHORT).show()
+            viewModel.registerState.collect { state ->
+                when (state) {
+                    is RegisterState.Idle -> {
+                        // 初始状态，无需特别处理
+                    }
+                    is RegisterState.Loading -> {
+                        // 正在处理，UI 已通过 isProcessing 控制按钮状态
+                    }
+                    is RegisterState.Success -> {
+                        Toast.makeText(this@RegisterActivity, state.message, Toast.LENGTH_SHORT).show()
                         navigateToCaptchaActivity(binding.mailInput.text.toString().trim())
-                    } else {
-                        Toast.makeText(this@RegisterActivity, "服务器错误，请稍后再尝试", Toast.LENGTH_SHORT).show()
+                    }
+                    is RegisterState.Error -> {
+                        Toast.makeText(this@RegisterActivity, state.message, Toast.LENGTH_LONG).show()
                     }
                 }
             }

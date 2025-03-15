@@ -12,7 +12,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.gochat.databinding.ActivityCaptchBinding
+import com.example.gochat.ui.user.RegisterActivity
+import com.example.gochat.utils.LoadingUtil
 import com.example.gochat.viewmodel.CaptchViewModel
+import com.example.myapp.ui.viewmodel.RegisterState
 import com.example.myapp.ui.viewmodel.RegisterViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -57,16 +60,27 @@ class CaptchActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             resviewModel.isProcessing.collect { isProcessing ->
-                binding.tvResend.isEnabled = !isProcessing // 在处理请求时禁用按钮
+                binding.tvResend.isEnabled = !isProcessing
+                if (isProcessing) {
+                    LoadingUtil.showLoading(this@CaptchActivity) // 显示加载动画
+                } else {
+                    LoadingUtil.hideLoading(this@CaptchActivity) // 隐藏加载动画
+                }
             }
         }
-
         lifecycleScope.launch {
-            resviewModel.result.collect { result ->
-                result?.let {
-                    if (it) {
+            resviewModel.registerState.collect { state ->
+                when (state) {
+                    is RegisterState.Idle -> {
+                        // 初始状态，无需特别处理
+                    }
+                    is RegisterState.Loading -> {
+                        // 正在处理，可以选择显示加载动画（可选）
+                    }
+                    is RegisterState.Success -> {
                         Toast.makeText(this@CaptchActivity, "验证码已重新发送至 $email", Toast.LENGTH_SHORT).show()
-                    } else {
+                    }
+                    is RegisterState.Error -> {
                         Toast.makeText(this@CaptchActivity, "服务器错误", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -190,9 +204,11 @@ class CaptchActivity : AppCompatActivity() {
 
         // 禁用输入框，防止重复提交
         setInputsEnabled(false)
+        LoadingUtil.showLoading(this)
 
         // 调用 ViewModel 验证
         viewModel.verify(email, code) { isSuccess ->
+            LoadingUtil.hideLoading(this) // 验证完成后隐藏加载动画
             if (isSuccess.equals("true")) {
                 Toast.makeText(this, "验证码验证成功", Toast.LENGTH_SHORT).show()
                 val intent = Intent(this, UserinfoaddActivity::class.java)

@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.gochat.MainActivity
 import com.example.gochat.databinding.ActivityPasswdchangeBinding
+import com.example.gochat.ui.user.RegisterActivity
+import com.example.gochat.utils.LoadingUtil
 import com.example.gochat.utils.setDebounceClickListener
 import com.example.gochat.viewmodel.PasswdchangeViewModel
 import kotlinx.coroutines.launch
@@ -25,14 +27,19 @@ class PasswdChangeActivity : AppCompatActivity() {
     }
 
     private fun initUI() {
-        // 从 Intent 中获取 username 和 email
+        // 从 Intent 中获取 username、email 和 token
         val username = intent.getStringExtra("username") ?: ""
         val email = intent.getStringExtra("email") ?: ""
+        val token = intent.getStringExtra("token") ?: "" // 从 Passwdforgot 获取
 
         lifecycleScope.launch {
             viewModel.isProcessing.collect { isProcessing ->
-                // 可选：根据状态更新 UI
                 binding.btnConfirm.isEnabled = !isProcessing
+                if (isProcessing) {
+                    LoadingUtil.showLoading(this@PasswdChangeActivity) // 显示加载动画
+                } else {
+                    LoadingUtil.hideLoading(this@PasswdChangeActivity) // 隐藏加载动画
+                }
             }
         }
 
@@ -64,20 +71,21 @@ class PasswdChangeActivity : AppCompatActivity() {
                 Toast.makeText(this, "密码不能为空", Toast.LENGTH_SHORT).show()
                 return@setDebounceClickListener
             }
-
             if (newPassword.length < 6) {
                 Toast.makeText(this, "密码长度不能少于6位", Toast.LENGTH_SHORT).show()
                 return@setDebounceClickListener
             }
-
             if (newPassword != confirmPassword) {
                 Toast.makeText(this, "两次输入的密码不一致", Toast.LENGTH_SHORT).show()
                 return@setDebounceClickListener
             }
 
-
-            // 调用 ViewModel 修改密码
-            viewModel.passwdChange(email,username,newPassword)
+            // 调用 ViewModel 修改密码，传递 token
+            viewModel.passwdChange(email, username, newPassword, token)
         }
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        LoadingUtil.hideLoading(this)
     }
 }

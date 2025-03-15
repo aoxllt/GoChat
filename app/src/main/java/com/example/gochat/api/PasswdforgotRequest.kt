@@ -1,6 +1,7 @@
 package com.example.gochat.api
 
-data class PasswdforgotRequest(
+class PasswdforgotRequest (
+    val email: String,
     val username: String,
-    val email: String
+    val captcha: String
 )

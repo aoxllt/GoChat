@@ -18,6 +18,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 val appModule = module {
     // 数据库
@@ -28,10 +29,6 @@ val appModule = module {
     // DAO
     single {
         get<AppDatabase>().userDao()
-    }
-
-    single { // 添加 AuthTokenDao
-        get<AppDatabase>().authTokenDao()
     }
 
     single { // 新增 UserInfoDao
@@ -45,9 +42,12 @@ val appModule = module {
         }
         val client = OkHttpClient.Builder()
             .addInterceptor(logging)
+            .connectTimeout(30, TimeUnit.SECONDS) // 连接超时：30秒
+            .readTimeout(30, TimeUnit.SECONDS)    // 读取超时：30秒
+            .writeTimeout(30, TimeUnit.SECONDS)   // 写入超时：30秒
             .build()
         Retrofit.Builder()
-            .baseUrl("http://10.22.75.168:8000/") // 替换为实际的后端 URL
+            .baseUrl("http://192.168.137.1:8000/")
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -56,7 +56,7 @@ val appModule = module {
 
     // Repository
     single {
-        UserRepository(get(), get(),get(),get(),androidContext())
+        UserRepository(get(), get(),get(),androidContext())
     }
 
     // Device ID（提取为单独的 single 定义，避免重复计算）
@@ -82,6 +82,6 @@ val appModule = module {
         PasswdchangeViewModel(get())
     }
     viewModel {
-        LoginViewModel(get(),get())
+        LoginViewModel(get(),get(),get())
     }
 }

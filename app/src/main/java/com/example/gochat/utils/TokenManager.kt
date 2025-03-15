@@ -2,6 +2,7 @@ package com.example.gochat.utils
 
 import android.content.Context
 import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.security.Keys
 import java.util.Date
 
 object TokenManager {
@@ -53,10 +54,12 @@ object TokenManager {
 
     fun isTokenValid(token: String): Boolean {
         return try {
+            val key = Keys.hmacShaKeyFor(SECRET_KEY.toByteArray()) // 使用 HMAC-SHA 密钥
             val claims = Jwts.parser()
-                .setSigningKey(SECRET_KEY.toByteArray()) // 使用与后端相同的密钥
-                .parseClaimsJws(token)
-                .body
+                .verifyWith(key) // 验证签名
+                .build()
+                .parseSignedClaims(token) // 解析签名后的 claims
+                .payload
 
             val expiration = claims.expiration
             expiration?.after(Date()) == true

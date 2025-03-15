@@ -4,17 +4,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.gochat.api.LoginResponse
 import com.example.gochat.data.database.dao.UserDao
-import com.example.gochat.data.database.entity.User
-import com.example.gochat.data.database.entity.enums.UserStatus
+import com.example.gochat.data.database.dao.UserInfoDao
 import com.example.gochat.data.repository.UserRepository
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class LoginViewModel(
     private val userRepository: UserRepository,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val userInfoDao: UserInfoDao
 ) : ViewModel() {
 
     private val _loginState = MutableLiveData<LoginState>()
@@ -24,12 +22,12 @@ class LoginViewModel(
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
 
-            // 本地验证（明文比较）
-            val localUser = userDao.getUserByUsername(account)
-            if (localUser != null && localUser.password == password) {
-                _loginState.value = LoginState.Success(localUser)
-                return@launch
-            }
+            // 本地验证
+//            val localUser = userDao.getUserByUsername(account)
+//            if (localUser != null && localUser.password == password) {
+//                _loginState.value = LoginState.Success(localUser.id)
+//                return@launch
+//            }
 
             // 后端验证
             val result = userRepository.login(account, password)
@@ -37,38 +35,22 @@ class LoginViewModel(
                 result.isSuccess -> {
                     val response = result.getOrNull()!!
                     if (response.status == "true") {
-                        val user = User(
-                            id = response.user?.id ?: 0,
-                            username = account,
-                            password = password,
-                            email = response.user?.email ?: "",
-                            avatarUrl = response.user?.avatarUrl,
-                            createdAt = System.currentTimeMillis(),
-                            status = UserStatus.ACTIVE
-                        )
-                        userDao.insert(user)
-                        _loginState.value = LoginState.Success(user)
+                        _loginState.value = LoginState.Success(response.user!!.id)
                     } else {
-                        _loginState.value = LoginState.Error(response.message ?: "Invalid response")
+                        _loginState.value = LoginState.Error(response.message ?: "登录失败")
                     }
                 }
                 result.isFailure -> {
-                    val errorMsg = result.exceptionOrNull()?.message ?: "Unknown error"
+                    val errorMsg = result.exceptionOrNull()?.message ?: "未知错误"
                     _loginState.value = LoginState.Error(errorMsg)
                 }
             }
         }
     }
-
-    fun isLoggedIn(): Boolean {
-        val latestToken = runBlocking { userRepository.getLatestToken() }
-        return latestToken?.accessToken?.isNotBlank() == true &&
-                latestToken.accessTokenExpiresAt?.let { it > System.currentTimeMillis() } ?: false
-    }
 }
 
 sealed class LoginState {
     object Loading : LoginState()
-    data class Success(val user: User) : LoginState()
+    data class Success(val userId: Int) : LoginState()
     data class Error(val message: String) : LoginState()
 }

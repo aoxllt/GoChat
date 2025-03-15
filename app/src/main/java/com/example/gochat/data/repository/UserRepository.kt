@@ -3,35 +3,36 @@ package com.example.gochat.data.repository
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import android.provider.Settings.Global.putString
 import android.util.Log
 import com.example.gochat.api.LoginRequest
 import com.example.gochat.api.LoginResponse
 import com.example.gochat.api.PasswdchangeRequest
 import com.example.gochat.api.PasswdforgotRequest
+import com.example.gochat.api.PasswdforgotSendcodeRequest
 import com.example.gochat.api.RegisterRequest
 import com.example.gochat.api.UseraddRequest
 import com.example.gochat.api.VerifyRequest
 import com.example.gochat.data.ApiService
-import com.example.gochat.data.database.dao.AuthTokenDao
 import com.example.gochat.data.database.dao.UserDao
 import com.example.gochat.data.database.dao.UserInfoDao
-import com.example.gochat.data.database.entity.AuthToken
 import com.example.gochat.data.database.entity.User
 import com.example.gochat.data.database.entity.UserInfo
+import com.example.gochat.data.database.entity.enums.UserStatus
 import com.example.gochat.utils.TokenManager
-import io.jsonwebtoken.Jwts
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import retrofit2.HttpException
 import retrofit2.Response
+import java.io.IOException
 import java.time.Instant
-import kotlin.math.log
+import java.time.LocalDate
 
 class UserRepository(
     private val userDao: UserDao, // 数据库操作
-    private val authToken: AuthTokenDao,
     private val userInfoDao: UserInfoDao,
     private val apiService: ApiService, // 网络请求
     private val context: Context
@@ -43,18 +44,44 @@ class UserRepository(
      * @param email 用户邮箱
      * @return 是否注册成功
      */
-    suspend fun register(deviceId: String, email: String): Boolean {
-        // 发送注册请求到后端
-        val request = RegisterRequest(deviceId, email)
-        val response = apiService.register(request)
+    suspend fun register(deviceId: String, email: String): Result<String> {
+        return try {
+            val request = RegisterRequest(deviceId, email)
+            val response = apiService.register(request)
 
-        // 如果请求成功，保存用户到数据库
-        if (response.isSuccessful) {
-            return true
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null && body.code == 200) {
+                    Result.success("注册成功") // 成功时固定提示
+                } else {
+                    Result.failure(Exception(body?.message ?: "注册失败")) // 注册失败使用 body.message
+                }
+            } else {
+                if (response.code() == 400) {
+                    val errorBody = response.errorBody()?.string()
+                    // 假设 errorBody 是 JSON 格式，尝试解析 message 字段
+                    val message = errorBody?.let {
+                        try {
+                            val json = JSONObject(it) // 需要 import org.json.JSONObject
+                            json.optString("message", "注册失败")
+                        } catch (e: Exception) {
+                            it // 如果解析失败，直接使用原始 errorBody 字符串
+                        }
+                    } ?: "注册失败"
+                    Result.failure(Exception(message))
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    Result.failure(Exception(errorBody ?: "服务器错误")) // 其他非成功响应使用 errorBody
+                }
+            }
+        } catch (e: IOException) {
+            Result.failure(Exception("网络错误"))
+        } catch (e: HttpException) {
+            Result.failure(Exception("服务器错误"))
+        } catch (e: Exception) {
+            Result.failure(Exception("注册失败"))
         }
-        return false
     }
-
     /**
      * 验证验证码
      * @param deviceId 设备 ID
@@ -78,109 +105,191 @@ class UserRepository(
         return outcome
     }
 
-    suspend fun checkname(username: String): String {
-        val rep = apiService.checkUsername(username)
-        val bodyString = if (rep.isSuccessful) {
-            rep.body()?.string() ?: ""
-        } else {
-            rep.errorBody()?.string() ?: ""
+    suspend fun checkUsername(username: String): String {
+        return withContext(Dispatchers.IO) {
+            try {
+                val response = apiService.checkUsername(username)
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body?.code == 200) {
+                        "可用"
+                    } else {
+                        body?.message ?: "用户名不可用"
+                    }
+                } else {
+                    val bodyString = response.errorBody()?.string() ?: "{}"
+                    val jsonObject = JSONObject(bodyString)
+                    jsonObject.optString("message", "未知错误")
+                }
+            } catch (e: Exception) {
+                Log.e("CheckUsername", "异常", e)
+                "检查失败"
+            }
         }
-        val jsonObject = JSONObject(bodyString)
-        var outcome = jsonObject.optString("mes", "")
-        if (outcome == "") {
-            return "服务器错误"
-        } else if (outcome == "用户名已存在") {
-            return "false"
-        } else if (outcome == "用户名可用") {
-            return "true"
-        }
-        return outcome
     }
 
     suspend fun saveUserInfo(
         request: UseraddRequest,
         avatarUri: Uri?,
-        contentResolver: ContentResolver,
-    ): String {
-        try {
-            val userJsonRequestBody = request.toJsonRequestBody()
-            val avatarPart = avatarUri?.let { uri ->
-                val inputStream = contentResolver.openInputStream(uri)
-                val byteArray = inputStream?.use { it.readBytes() } ?: byteArrayOf()
-                val requestFile = byteArray.toRequestBody("image/*".toMediaTypeOrNull())
-                MultipartBody.Part.createFormData("avatar", "avatar.jpg", requestFile)
-            }
-
-            val rep = apiService.registerUser(
-                userJson = userJsonRequestBody,
-                avatar = avatarPart
-            )
-            val bodyString = if (rep.isSuccessful) {
-                rep.body()?.string() ?: ""
-            } else {
-                rep.errorBody()?.string() ?: ""
-            }
-            Log.d("SaveUserInfo", "HTTP ${rep.code()}: $bodyString")
-
-            val jsonObject = JSONObject(bodyString)
-            val outcome = jsonObject.optString("message", "")
-            return when {
-                rep.isSuccessful && outcome == "注册成功" -> {
-                    // 解析 data 对象
-                    val data = jsonObject.optJSONObject("data")
-                    if (data != null) {
-                        val user = User(
-                            id = data.optInt("id", 0),
-                            username = request.username,
-                            email = request.email,
-                            password = request.password, // 注意：实际应加密存储
-                            avatarUrl = data.optString("avatar_url", null)
-                        )
-                        userDao.insert(user) // 插入本地数据库
-                        Log.d("SaveUserInfo", "用户已插入本地数据库: $user")
-                    }
-                    "true"
+        contentResolver: ContentResolver
+    ): Result<LoginResponse> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val userJsonRequestBody = request.toJsonRequestBody()
+                val avatarPart = avatarUri?.let { uri ->
+                    val inputStream = contentResolver.openInputStream(uri)
+                    val byteArray = inputStream?.use { it.readBytes() } ?: byteArrayOf()
+                    val requestFile = byteArray.toRequestBody("image/*".toMediaTypeOrNull())
+                    MultipartBody.Part.createFormData("avatar", "avatar.jpg", requestFile)
                 }
 
-                outcome == "" -> "服务器错误"
-                else -> outcome
+                val response: Response<LoginResponse> = apiService.registerUser(
+                    userJson = userJsonRequestBody,
+                    avatar = avatarPart
+                )
+
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null && body.status == "true") {
+                        // 创建新 User 对象
+                        val user = User(
+                            id = body.user?.id ?: 0, // Int 类型，与后端一致
+                            username = request.username,
+                            password = request.password, // 注意：应加密存储
+                            email = body.user?.email ?: request.email,
+                            createdAt = System.currentTimeMillis(),
+                            status = UserStatus.ACTIVE
+                        )
+
+                        // 直接插入新用户
+                        userDao.insert(user)
+                        Log.d("SaveUserInfo", "新用户已插入 User 表: $user")
+
+                        // 获取用户 ID
+                        val userId = body.user?.id
+                            ?: return@withContext Result.failure(Exception("无法获取用户 ID"))
+
+                        // 创建新 UserInfo 对象
+                        val userInfo = UserInfo(
+                            id = userId,
+                            displayName = body.userInfo?.displayName ?: body.user?.username ?: request.username,
+                            email = body.userInfo?.email ?: body.user?.email ?: request.email,
+                            avatarUrl = body.userInfo?.avatarUrl, // 从 userInfo 获取 avatarUrl
+                            bio = body.userInfo?.bio,
+                            gender = body.userInfo?.gender ?: "unspecified",
+                            birthDate = body.userInfo?.birthDate?.let {
+                                LocalDate.parse(it.substring(0, 10))
+                            },
+                            phoneNumber = body.userInfo?.phoneNumber,
+                            location = body.userInfo?.location,
+                            lastLoginTime = Instant.now().toString()
+                        )
+
+                        // 直接插入新 UserInfo
+                        userInfoDao.insert(userInfo)
+                        Log.d("SaveUserInfo", "新用户信息已插入 UserInfo 表: $userInfo")
+
+                        // 保存令牌
+                        saveTokens(userId, body.accessToken ?: "", body.refreshToken ?: "")
+                        Result.success(body)
+                    } else {
+                        Result.failure(Exception("服务器返回无效数据"))
+                    }
+                } else {
+                    val bodyString = response.errorBody()?.string() ?: "{}"
+                    val jsonObject = JSONObject(bodyString)
+                    val message = jsonObject.optString("message", "未知错误")
+                    Result.failure(Exception(message))
+                }
+            } catch (e: Exception) {
+                Log.e("SaveUserInfo", "Register failed")
+                Result.failure(Exception("网络错误"))
             }
+        }
+    }
+
+    suspend fun sendVerificationCode(username: String, email: String): Result<Boolean> {
+        return try {
+            val request = PasswdforgotSendcodeRequest(username, email)
+            val response = apiService.sendVerificationCode(request)
+
+            if (response.isSuccessful) {
+                // 假设 code 200 表示成功
+                val body = response.body()
+                if (body != null && body.code == 200) {
+                    Result.success(true)
+                } else {
+                    Result.failure(Exception(body?.message ?: "未知错误"))
+                }
+            } else {
+                Result.failure(HttpException(response))
+            }
+        } catch (e: IOException) {
+            // 网络错误
+            Result.failure(Exception("网络错误"))
+        } catch (e: HttpException) {
+            // HTTP 状态码错误
+            Result.failure(Exception("服务器错误"))
         } catch (e: Exception) {
-            Log.e("SaveUserInfo", "异常: ${e.message}", e)
-            return "保存失败: ${e.message}"
+            // 其他异常
+            Result.failure(Exception("发送验证码失败"))
         }
     }
 
-    suspend fun passwdForgot(username: String, email: String): String {
-        val req = PasswdforgotRequest(username, email)
-        val rep = apiService.passwdForgot(req)
-        val bodyString = if (rep.isSuccessful) {
-            return "true"
-        } else {
-            rep.errorBody()?.string() ?: ""
+    suspend fun passwdForgot(username: String, email: String, code: String): Result<String> {
+        return try {
+            val request= PasswdforgotRequest(email, username,code)
+            val response = apiService.passwdForgot(request)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null && body.code == 200) {
+                    val token = body.token
+                    if (!token.isNullOrEmpty()) {
+                        Result.success(token)
+                    } else {
+                        Result.failure(Exception(body.message ?: "验证失败"))
+                    }
+                } else {
+                    Result.failure(Exception(body?.message ?: "未知错误"))
+                }
+            } else {
+                val bodyString = response.errorBody()?.string() ?: "{}"
+                val jsonObject = JSONObject(bodyString)
+                val message = jsonObject.optString("message", "未知错误")
+                Result.failure(Exception(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(Exception("网络错误"))
+        } catch (e: Exception) {
+            Result.failure(Exception("未知错误"))
         }
-        val jsonObject = JSONObject(bodyString)
-        val outcome = jsonObject.optString("message", "")
-        if (outcome == "") {
-            return "服务器错误"
-        }
-        return outcome
     }
 
-    suspend fun passwdChange(email: String, usernam: String, newpasswd: String): String {
-        val request = PasswdchangeRequest(email, usernam, newpasswd)
-        val rep = apiService.passwdChange(request)
-        val bodyString = if (rep.isSuccessful) {
-            return "true"
-        } else {
-            rep.errorBody()?.string() ?: ""
+    suspend fun passwdChange(email: String, username: String, newPassword: String, token: String): Result<String> {
+        return try {
+            val request = PasswdchangeRequest(email, username, newPassword, token)
+            val response = apiService.passwdChange(request)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null && body.code == 200) {
+                    Result.success("true") // 成功时返回 "true"
+                } else {
+                    Result.failure(Exception(body?.message ?: "未知错误"))
+                }
+            } else {
+                val bodyString = response.errorBody()?.string() ?: "{}"
+                val jsonObject = JSONObject(bodyString)
+                val message = jsonObject.optString("message", "未知错误")
+                Result.failure(Exception(message))
+            }
+        } catch (e: IOException) {
+            Result.failure(Exception("网络错误"))
+        } catch (e: HttpException) {
+            Result.failure(Exception("服务器错误"))
+        } catch (e: Exception) {
+            Result.failure(Exception("密码重置失败"))
         }
-        val jsonObject = JSONObject(bodyString)
-        val outcome = jsonObject.optString("message", "")
-        if (outcome == "") {
-            return "服务器错误"
-        }
-        return outcome
     }
 
     /**
@@ -193,36 +302,58 @@ class UserRepository(
 
             if (response.isSuccessful) {
                 val body = response.body()
-                if (body != null) {
+                if (body != null && body.status == "true") {
+                    // 创建或更新 User 对象
                     val user = User(
+                        id = body.user?.id ?: 0, // Int 类型，与后端一致
                         username = account,
                         password = password,
-                        email = body.user?.email ?: "",
-                        avatarUrl = body.user?.avatarUrl
+                        email = body.user?.email ?: ""
+                        // 注意：User 没有 avatarUrl 字段，后端返回的 avatarUrl 将用于 UserInfo
                     )
-                    userDao.insert(user)
-                    val userId = userDao.getUserByUsername(account)?.id
-                        ?: return Result.failure(Exception("无法获取用户 ID，请稍后重试"))
 
+                    // 更新或插入 User
+                    val existingUser = userDao.getUserByUsername(account)
+                    if (existingUser != null) {
+                        val updatedUser = user.copy(id = existingUser.id)
+                        userDao.update(updatedUser)
+                    } else {
+                        userDao.insert(user)
+                    }
+
+                    // 获取用户 ID
+                    val userId = userDao.getUserByUsername(account)?.id
+                        ?: return Result.failure(Exception("无法获取用户 ID"))
+
+                    // 创建或更新 UserInfo 对象
                     val userInfo = UserInfo(
-                        id = userId.toLong(),
+                        id = userId, // Int 类型，无需转换
                         displayName = body.userInfo?.displayName ?: body.user?.username,
                         email = body.userInfo?.email ?: body.user?.email ?: "",
-                        avatarUrl = body.user?.avatarUrl,
+                        avatarUrl = body.userInfo?.avatarUrl, // 从 user 中获取 avatarUrl
                         bio = body.userInfo?.bio,
                         gender = body.userInfo?.gender ?: "unspecified",
                         birthDate = body.userInfo?.birthDate?.let {
-                            java.time.LocalDate.parse(it.substring(0, 10))
+                            LocalDate.parse(it.substring(0, 10))
                         },
                         phoneNumber = body.userInfo?.phoneNumber,
                         location = body.userInfo?.location,
                         lastLoginTime = Instant.now().toString()
                     )
-                    userInfoDao.insert(userInfo)
+
+                    // 更新或插入 UserInfo
+                    val existingUserInfo = userInfoDao.getUserInfoById(userId)
+                    if (existingUserInfo != null) {
+                        userInfoDao.update(userInfo)
+                    } else {
+                        userInfoDao.insert(userInfo)
+                    }
+
+                    // 保存令牌
                     saveTokens(userId, body.accessToken ?: "", body.refreshToken ?: "")
                     Result.success(body)
                 } else {
-                    Result.failure(Exception("服务器错误"))
+                    Result.failure(Exception("服务器返回无效数据"))
                 }
             } else {
                 val bodyString = response.errorBody()?.string() ?: "{}"
@@ -231,32 +362,14 @@ class UserRepository(
                 Result.failure(Exception(message))
             }
         } catch (e: Exception) {
-            Result.failure(Exception("网络错误：${e.localizedMessage ?: "未知错误"}"))
+            Log.e("UserRepository", "Login failed")
+            Result.failure(Exception("网络错误"))
         }
     }
 
-    private suspend fun saveTokens(userId: Int, accessToken: String, refreshToken: String) {
-        // 使用 TokenManager 保存到 SharedPreferences
+    private fun saveTokens(userId: Int, accessToken: String, refreshToken: String) {
         TokenManager.saveTokens(context, userId, accessToken, refreshToken)
-        Log.d("UserRepository", "Tokens saved for userId: $userId, accessToken: $accessToken, refreshToken: $refreshToken")
-        val savedAccessToken = TokenManager.getAccessToken(context)
-        val savedRefreshToken = TokenManager.getRefreshToken(context)
-        val savedUserId = TokenManager.getUserId(context)
-        Log.d("UserRepository", "Verified saved tokens: accessToken=$savedAccessToken, refreshToken=$savedRefreshToken, userId=$savedUserId")
-    }
-
-    // 计算过期时间（可选）
-    private fun calculateExpirationTime(accessToken: String): Long? {
-        return try {
-            val claims = Jwts.parser()
-                .setSigningKey("your-secret-key-here".toByteArray()) // 与后端一致
-                .parseClaimsJws(accessToken)
-                .body
-            claims.expiration?.time
-        } catch (e: Exception) {
-            Log.e("UserRepository", "Failed to parse token expiration: $e")
-            null
-        }
+        Log.d("UserRepository", "Tokens saved: userId=$userId, accessToken=$accessToken, refreshToken=$refreshToken")
     }
 
 
@@ -265,7 +378,5 @@ class UserRepository(
                 !response.accessToken.isNullOrBlank() &&
                 !response.refreshToken.isNullOrBlank()
     }
-    suspend fun getLatestToken(): AuthToken? {
-        return authToken.getLatestToken()
-    }
+
 }

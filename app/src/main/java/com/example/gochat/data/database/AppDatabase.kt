@@ -4,22 +4,17 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.gochat.data.database.converter.DateConverter
-import com.example.gochat.data.database.dao.AuthTokenDao
+import android.content.Context
 import com.example.gochat.data.database.dao.UserDao
-import com.example.gochat.data.database.entity.AuthToken
+import com.example.gochat.data.database.dao.UserInfoDao
 import com.example.gochat.data.database.entity.User
 import com.example.gochat.data.database.entity.UserInfo
-import android.content.Context
-import com.example.gochat.data.database.dao.UserInfoDao
 
-
-@Database(entities = [User::class, AuthToken::class, UserInfo::class], version = 4, exportSchema = false)
-@TypeConverters(DateConverter::class)
+@Database(entities = [User::class, UserInfo::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
-    abstract fun authTokenDao(): AuthTokenDao
-    abstract fun userInfoDao(): UserInfoDao // 新增 UserInfoDao
+    abstract fun userInfoDao(): UserInfoDao
 
     companion object {
         @Volatile
@@ -30,10 +25,8 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "app_database"
-                )
-                    .fallbackToDestructiveMigration() // 开发阶段使用
-                    .build()
+                    "gochat_database"
+                ).build()
                 INSTANCE = instance
                 instance
             }

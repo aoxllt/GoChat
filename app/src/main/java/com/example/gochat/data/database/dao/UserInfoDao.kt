@@ -12,21 +12,22 @@ interface UserInfoDao {
     @Update
     suspend fun update(userInfo: UserInfo)
 
-    @Query("SELECT * FROM user_info WHERE userId = :userId")
-    suspend fun getProfileByUserId(userId: Long): UserInfo?
-
-    @Query("SELECT * FROM user_info WHERE id = :userId")
-    suspend fun getProfilesByUserId(userId: Long): List<UserInfo>
-
-    @Query("SELECT * FROM user_info WHERE email = :email")
-    suspend fun getProfileByEmail(email: String): UserInfo?
-
-    @Query("UPDATE user_info SET lastLoginTime = :time WHERE userId = :userId")
-    suspend fun updateLastLoginTime(userId: Long, time: String = java.time.Instant.now().toString())
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(userInfo: UserInfo)
 
-    @Query("SELECT * FROM user_info WHERE id = :userId LIMIT 1")
-    suspend fun getUserInfoByUserId(userId: Long): UserInfo?
+    // 获取单个用户信息，使用 id（主键）
+    @Query("SELECT * FROM user_info WHERE id = :id LIMIT 1")
+    suspend fun getUserInfoById(id: Int): UserInfo?
+
+    // 根据邮箱获取用户信息
+    @Query("SELECT * FROM user_info WHERE email = :email LIMIT 1")
+    suspend fun getUserInfoByEmail(email: String): UserInfo?
+
+    // 获取多个用户信息（如果需要，按 id 查询）
+    @Query("SELECT * FROM user_info WHERE id = :id")
+    suspend fun getUserInfosById(id: Int): List<UserInfo>
+
+    // 更新最后登录时间
+    @Query("UPDATE user_info SET last_login_time = :time WHERE id = :id")
+    suspend fun updateLastLoginTime(id: Int, time: String = java.time.Instant.now().toString())
 }

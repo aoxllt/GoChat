@@ -12,9 +12,16 @@ import com.example.gochat.R
 import com.example.gochat.api.UseraddRequest
 import com.example.gochat.databinding.ActivityUseraddBinding
 import com.example.gochat.ui.main.HomeActivity
+import com.example.gochat.utils.LoadingUtil
 import com.example.gochat.utils.setDebounceClickListener
+import com.example.gochat.viewmodel.RegisterState
 import com.example.gochat.viewmodel.UseraddViewModel
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class UserinfoaddActivity : AppCompatActivity() {
@@ -43,6 +50,7 @@ class UserinfoaddActivity : AppCompatActivity() {
         }
 
         setupUsernameWatcher()
+        observeRegisterState()
 
         binding.btnConfirm.setDebounceClickListener {
             val username = binding.etUsername.text.toString().trim()
@@ -53,20 +61,8 @@ class UserinfoaddActivity : AppCompatActivity() {
                 return@setDebounceClickListener
             }
 
-            coroutineScope.launch {
-                val request = UseraddRequest(email, username, password)
-                val saveResult = viewModel.saveUserInfo(request, avatarUri, contentResolver)
-                if (saveResult == "true") {
-                    Toast.makeText(this@UserinfoaddActivity, "用户信息已保存", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this@UserinfoaddActivity, HomeActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    }
-                    startActivity(intent)
-                    finish()
-                } else {
-                    Toast.makeText(this@UserinfoaddActivity, saveResult, Toast.LENGTH_SHORT).show()
-                }
-            }
+            val request = UseraddRequest(email, username, password)
+            viewModel.saveUserInfo(request, avatarUri, contentResolver)
         }
     }
 
@@ -95,13 +91,39 @@ class UserinfoaddActivity : AppCompatActivity() {
                     delay(500)
                     val result = viewModel.checkUsername(username)
                     when (result) {
-                        "true" -> binding.etUsername.error = null
-                        "false" -> binding.etUsername.error = "用户名已被占用"
-                        else -> Toast.makeText(this@UserinfoaddActivity, result, Toast.LENGTH_SHORT).show()
+                        "可用" -> binding.etUsername.error = null
+                        else -> binding.etUsername.error = result
                     }
                 }
             }
         })
+    }
+
+    private fun observeRegisterState() {
+        viewModel.registerState.observe(this) { state ->
+            when (state) {
+                is RegisterState.Loading -> {
+                    binding.btnConfirm.isEnabled = false
+                    LoadingUtil.showLoading(this) // 显示加载动画
+                    Toast.makeText(this, "注册中...", Toast.LENGTH_SHORT).show()
+                }
+                is RegisterState.Success -> {
+                    LoadingUtil.hideLoading(this) // 隐藏加载动画
+                    binding.btnConfirm.isEnabled = true
+                    Toast.makeText(this, "注册成功，欢迎来到GoChat!", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, HomeActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(intent)
+                    finish()
+                }
+                is RegisterState.Error -> {
+                    LoadingUtil.hideLoading(this) // 隐藏加载动画
+                    binding.btnConfirm.isEnabled = true
+                    Toast.makeText(this, state.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun validateInputs(username: String, password: String, confirmPassword: String): Boolean {
@@ -109,7 +131,7 @@ class UserinfoaddActivity : AppCompatActivity() {
             Toast.makeText(this, "用户名不能为空", Toast.LENGTH_SHORT).show()
             return false
         }
-        if (username.length <= 4) {  // 添加长度检查
+        if (username.length <= 4) {
             Toast.makeText(this, "用户名要大于四位", Toast.LENGTH_SHORT).show()
             return false
         }
@@ -131,5 +153,6 @@ class UserinfoaddActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         coroutineScope.cancel()
+        LoadingUtil.hideLoading(this)
     }
 }
