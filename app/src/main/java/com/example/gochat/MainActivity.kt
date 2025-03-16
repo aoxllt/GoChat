@@ -9,7 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.gochat.data.ApiService
 import com.example.gochat.data.repository.refreshAccessToken
 import com.example.gochat.databinding.ActivityMainBinding
-import com.example.gochat.ui.main.HomeActivity
+
 import com.example.gochat.ui.user.PasswdForgotActivity
 import com.example.gochat.ui.user.RegisterActivity
 import com.example.gochat.utils.LoadingUtil // 添加导入

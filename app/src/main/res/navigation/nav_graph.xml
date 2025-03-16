@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/chatListFragment">
+
+    <!-- 聊天列表 Fragment -->
+    <fragment
+        android:id="@+id/chatListFragment"
+        android:name="com.example.gochat.ui.chat.ChatListFragment"
+        android:label="Chat List">
+        <action
+            android:id="@+id/action_chatListFragment_to_chatFragment"
+            app:destination="@id/chatFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
+    </fragment>
+
+    <!-- 好友列表 Fragment -->
+    <fragment
+        android:id="@+id/friendListFragment"
+        android:name="com.example.gochat.ui.friend.FriendListFragment"
+        android:label="Friends" />
+
+    <!-- 我的 Fragment -->
+    <fragment
+        android:id="@+id/myFragment"
+        android:name="com.example.gochat.ui.my.MyFragment"
+        android:label="My Profile" />
+
+    <!-- 具体聊天 Fragment -->
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.example.gochat.ui.chat.ChatFragment"
+        android:label="Chat">
+        <argument
+            android:name="friendId"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+</navigation>

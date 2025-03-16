@@ -11,7 +11,7 @@ object TokenManager {
     private const val KEY_REFRESH_TOKEN = "refreshToken"
     private const val KEY_USER_ID = "userId"
 
-    // 假设你有 JWT 签名密钥（从后端获取或配置）
+    // JWT 签名密钥（与后端保持一致）
     private const val SECRET_KEY = "aoxllt2004" // 替换为实际密钥
 
     @Synchronized
@@ -54,18 +54,35 @@ object TokenManager {
 
     fun isTokenValid(token: String): Boolean {
         return try {
-            val key = Keys.hmacShaKeyFor(SECRET_KEY.toByteArray()) // 使用 HMAC-SHA 密钥
+            val key = Keys.hmacShaKeyFor(SECRET_KEY.toByteArray())
             val claims = Jwts.parser()
-                .verifyWith(key) // 验证签名
+                .verifyWith(key)
                 .build()
-                .parseSignedClaims(token) // 解析签名后的 claims
+                .parseSignedClaims(token)
                 .payload
 
             val expiration = claims.expiration
             expiration?.after(Date()) == true
         } catch (e: Exception) {
-            // 捕获解析失败、签名无效或过期等异常
             false
         }
+    }
+
+    /**
+     * 从 JWT 中提取用户 ID
+     * 假设用户 ID 存储在 "sub" 字段中，如果后端使用其他字段（如 "userId"），需调整
+     */
+    fun getUserIdFromToken(token: String): Int {
+        val key = Keys.hmacShaKeyFor(SECRET_KEY.toByteArray())
+        val claims = Jwts.parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .payload
+
+        // 假设用户 ID 存储在 "sub" 字段中，且为整数
+        val subject = claims.subject
+        return subject?.toInt()!!
+
     }
 }

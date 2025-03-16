@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)      // Kotlin Android 插件
     kotlin("kapt")                          // Kotlin 注解处理插件
 }
-
 android {
     namespace = "com.example.gochat"
     compileSdk = 35
@@ -35,6 +34,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 
     kapt {
@@ -44,19 +44,26 @@ android {
 }
 
 dependencies {
-    // Koin 依赖注入
+    // Kotlin
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.9.0") // 确保最新版本
+
+    // Koin
     implementation("io.insert-koin:koin-android:3.5.0")
 
     // Android 核心库
     implementation("androidx.core:core-ktx:1.13.0")
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.appcompat:appcompat:1.7.0") // 修正为有效版本
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.activity:activity-ktx:1.9.0")
+    implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 
-    // ViewModel 和协程
+    // ViewModel 和 LiveData
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.0")
 
     // Retrofit 和 OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
@@ -69,9 +76,16 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
 
+    // Navigation
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+
     // Gson 和 JWT
     implementation("com.google.code.gson:gson:2.11.0")
-    implementation("io.jsonwebtoken:jjwt:0.12.6")
+    implementation("io.jsonwebtoken:jjwt:0.12.5") // 确保版本存在，必要时调整
+
+    // Glide
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 
     // 测试依赖
     testImplementation("junit:junit:4.13.2")

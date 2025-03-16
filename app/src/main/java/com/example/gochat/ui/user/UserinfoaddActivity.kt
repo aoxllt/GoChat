@@ -8,10 +8,11 @@ import android.text.TextWatcher
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.example.gochat.HomeActivity
 import com.example.gochat.R
 import com.example.gochat.api.UseraddRequest
 import com.example.gochat.databinding.ActivityUseraddBinding
-import com.example.gochat.ui.main.HomeActivity
+
 import com.example.gochat.utils.LoadingUtil
 import com.example.gochat.utils.setDebounceClickListener
 import com.example.gochat.viewmodel.RegisterState
@@ -111,9 +112,7 @@ class UserinfoaddActivity : AppCompatActivity() {
                     LoadingUtil.hideLoading(this) // 隐藏加载动画
                     binding.btnConfirm.isEnabled = true
                     Toast.makeText(this, "注册成功，欢迎来到GoChat!", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, HomeActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    }
+                    val intent = Intent(this, HomeActivity::class.java)
                     startActivity(intent)
                     finish()
                 }
