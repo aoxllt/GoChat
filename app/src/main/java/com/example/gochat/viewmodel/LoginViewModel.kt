@@ -23,11 +23,11 @@ class LoginViewModel(
             _loginState.value = LoginState.Loading
 
             // 本地验证
-//            val localUser = userDao.getUserByUsername(account)
-//            if (localUser != null && localUser.password == password) {
-//                _loginState.value = LoginState.Success(localUser.id)
-//                return@launch
-//            }
+            val localUser = userDao.getUserByUsername(account)
+            if (localUser != null && localUser.password == password) {
+                _loginState.value = LoginState.Success(localUser.id)
+                return@launch
+            }
 
             // 后端验证
             val result = userRepository.login(account, password)

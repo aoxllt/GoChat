@@ -1,10 +1,10 @@
 package com.example.gochat.data.database
 
+import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import android.content.Context
 import com.example.gochat.data.database.dao.UserDao
 import com.example.gochat.data.database.dao.UserInfoDao
 import com.example.gochat.data.database.entity.User
@@ -14,7 +14,7 @@ import com.example.gochat.data.database.entity.UserInfo
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
-    abstract fun userInfoDao(): UserInfoDao
+    abstract fun userInfoDao(): UserInfoDao // 新增
 
     companion object {
         @Volatile

@@ -80,6 +80,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         binding.btnLogin.setDebounceClickListener {
+            startActivity(Intent(this@MainActivity, HomeActivity::class.java))
+            finish()
             val account = binding.etaccount.text.toString().trim()
             val passwd = binding.etpasswd.text.toString().trim()
 

@@ -7,47 +7,71 @@
     android:background="#F5F6FA"
     android:padding="16dp">
 
-
-    <TextView
-        android:id="@+id/titleTextView"
-        android:layout_width="0dp"
+    <!-- 清除 Room 数据按钮 -->
+    <Button
+        android:id="@+id/btnClearRoom"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="140dp"
-        android:gravity="center"
-        android:text="页面丢失了"
-        android:textColor="#2C3E50"
-        android:textSize="60sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.73"
-        app:layout_constraintStart_toStartOf="parent"
+        android:backgroundTint="#FF5722"
+        android:padding="10dp"
+        android:text="清除 ROOM"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_default="wrap" />
-
-    <TextView
-        android:id="@+id/messageTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
-        android:gravity="center"
-        android:text="暂时还不想写"
-        android:textColor="#7F8C8D"
-        android:textSize="32sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.598"
+        app:layout_constraintBottom_toTopOf="@id/btnShowRoom"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleTextView"
-        app:layout_constraintWidth_default="wrap" />
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 展示 Room 数据按钮 -->
+    <Button
+        android:id="@+id/btnShowRoom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#22FF3C"
+        android:padding="10dp"
+        android:text="展示"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/btnClearRoom"
+        app:layout_constraintBottom_toTopOf="@id/btnClearJwt"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 清除 JWT 按钮 -->
     <Button
         android:id="@+id/btnClearJwt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="清除 JWT"
-        android:textSize="16sp"
-        android:padding="10dp"
         android:backgroundTint="#FF5722"
+        android:padding="10dp"
+        android:text="清除 JWT"
         android:textColor="#FFFFFF"
-        android:layout_centerInParent="true" />
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/btnShowRoom"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- 内容区域，可以是 Fragment 或其他视图 -->
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- 底部导航栏 -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/windowBackground"
+            app:menu="@menu/bottom_navigation_menu" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -47,7 +47,7 @@ val appModule = module {
             .writeTimeout(30, TimeUnit.SECONDS)   // 写入超时：30秒
             .build()
         Retrofit.Builder()
-            .baseUrl("http://192.168.137.1:8000/")
+            .baseUrl("http://10.22.75.168:8000/")
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

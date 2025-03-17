@@ -162,7 +162,7 @@ class UserRepository(
                         )
 
                         // 直接插入新用户
-                        userDao.insert(user)
+                        userDao.insertUser(user)
                         Log.d("SaveUserInfo", "新用户已插入 User 表: $user")
 
                         // 获取用户 ID
@@ -316,9 +316,9 @@ class UserRepository(
                     val existingUser = userDao.getUserByUsername(account)
                     if (existingUser != null) {
                         val updatedUser = user.copy(id = existingUser.id)
-                        userDao.update(updatedUser)
+                        userDao.updateUser(updatedUser)
                     } else {
-                        userDao.insert(user)
+                        userDao.insertUser(user)
                     }
 
                     // 获取用户 ID

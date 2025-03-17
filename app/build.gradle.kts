@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.gochat"
         minSdk = 34
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "ss1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -73,8 +73,11 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("io.jsonwebtoken:jjwt:0.12.6")
 
+    implementation("com.google.android.material:material:1.9.0")
     // 测试依赖
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+
+
 }
