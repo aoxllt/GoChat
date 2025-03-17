@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/navigation_home"
-        android:icon="@drawable/gopher"
-        android:title="首页" />
+        android:id="@+id/chatListFragment"
+        android:title="聊天"
+        android:icon="@drawable/ic_chat" />
     <item
-        android:id="@+id/navigation_category"
-        android:icon="@drawable/gopher"
-        android:title="分类" />
+        android:id="@+id/friendListFragment"
+        android:title="好友"
+        android:icon="@drawable/ic_friends" />
     <item
-        android:id="@+id/navigation_cart"
-        android:icon="@drawable/gopher"
-        android:title="购物车" />
-    <item
-        android:id="@+id/navigation_profile"
-        android:icon="@drawable/gopher"
-        android:title="我的" />
+        android:id="@+id/myFragment"
+        android:title="我的"
+        android:icon="@drawable/ic_my" />
 </menu>

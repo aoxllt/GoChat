@@ -1,77 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F6FA"
-    android:padding="16dp">
+    android:background="#F5F5F5">
 
-    <!-- 清除 Room 数据按钮 -->
-    <Button
-        android:id="@+id/btnClearRoom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="#FF5722"
-        android:padding="10dp"
-        android:text="清除 ROOM"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btnShowRoom"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <!-- 展示 Room 数据按钮 -->
-    <Button
-        android:id="@+id/btnShowRoom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="#22FF3C"
-        android:padding="10dp"
-        android:text="展示"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/btnClearRoom"
-        app:layout_constraintBottom_toTopOf="@id/btnClearJwt"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#87CEEB"
+            app:titleTextColor="@android:color/white"
+            android:contentInsetStart="0dp"
+            android:contentInsetLeft="0dp">
 
-    <!-- 清除 JWT 按钮 -->
-    <Button
-        android:id="@+id/btnClearJwt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:backgroundTint="#FF5722"
-        android:padding="10dp"
-        android:text="清除 JWT"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/btnShowRoom"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="8dp">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                <ImageView
+                    android:id="@+id/avatarImage"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
+                    android:layout_marginEnd="4dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_default_avatar"
+                    android:contentDescription="个人头像" />
+
+                <ImageView
+                    android:id="@+id/statusIndicator"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="-16dp"
+                    android:layout_marginBottom="2dp"
+                    android:src="@drawable/ic_status_online"
+                    android:contentDescription="在线状态" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/addFriendButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="添加好友"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:padding="4dp"
+                android:src="@drawable/ic_add"
+                app:tint="@android:color/white"
+                tools:ignore="TouchTargetSizeCheck" />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:navGraph="@navigation/nav_graph" />
 
-        <!-- 内容区域，可以是 Fragment 或其他视图 -->
-        <FrameLayout
-            android:id="@+id/fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#87CEEB"
+        app:itemIconTint="@drawable/nav_item_color_selector"
+        app:itemTextColor="@drawable/nav_item_color_selector"
+        app:menu="@menu/bottom_navigation_menu" />
 
-        <!-- 底部导航栏 -->
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottom_navigation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/windowBackground"
-            app:menu="@menu/bottom_navigation_menu" />
-
-    </LinearLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

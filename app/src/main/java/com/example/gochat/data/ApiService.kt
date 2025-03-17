@@ -41,4 +41,15 @@ interface ApiService {
     suspend fun refreshToken(@Header("Refresh-Token") refreshToken: String): Response<LoginResponse>
     @POST("passwdfgcode")
     suspend fun sendVerificationCode(@Body passwdchange: PasswdforgotSendcodeRequest): Response<Respons>
+//    @POST("auth/profile")
+//    suspend fun getUserProfile(
+//        @Header("Authorization") token: String
+//    ): Response<UserProfileResponse>
+//
+//    // 新增更新用户资料的接口
+//    @POST("auth/profile/update")
+//    suspend fun updateUserProfile(
+//        @Header("Authorization") token: String,
+//        @Body userInfo: UserInfo
+//    ): Response<Respons>
 }
