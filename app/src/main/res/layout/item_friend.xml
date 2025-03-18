@@ -4,28 +4,51 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp"
-    android:gravity="center_vertical">
+    android:paddingVertical="12dp"
+    android:paddingHorizontal="16dp"
+    android:gravity="center_vertical"
+    android:background="?android:attr/selectableItemBackground">
 
     <ImageView
-        android:id="@+id/friendAvatar"
+        android:id="@+id/friendAvatarImageView"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:src="@drawable/ic_default_avatar"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_default_avatar" />
+        android:background="@drawable/circle_background" />
 
-    <TextView
-        android:id="@+id/friendName"
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="12dp"
-        android:textSize="16sp"
-        android:textColor="#333333" />
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <TextView
+            android:id="@+id/friendUsernameTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="用户名"
+            android:textSize="16sp"
+            android:textColor="#333333"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/friendStatusTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="在线"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:maxLines="1"
+            android:ellipsize="end" />
+    </LinearLayout>
 
     <ImageView
-        android:id="@+id/statusIndicator"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:src="@drawable/ic_status_online" />
+        android:id="@+id/friendStatusIcon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_status_online"
+        android:contentDescription="Status" />
 </LinearLayout>

@@ -1,5 +1,6 @@
 package com.example.gochat.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,12 +8,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.gochat.data.database.dao.UserDao
 import com.example.gochat.data.database.dao.UserInfoDao
 import com.example.gochat.data.repository.UserRepository
+import com.example.gochat.utils.TokenManager
 import kotlinx.coroutines.launch
 
 class LoginViewModel(
     private val userRepository: UserRepository,
     private val userDao: UserDao,
-    private val userInfoDao: UserInfoDao
+    private val userInfoDao: UserInfoDao,
+    private val context: Context
 ) : ViewModel() {
 
     private val _loginState = MutableLiveData<LoginState>()
@@ -24,7 +27,8 @@ class LoginViewModel(
 
             // 本地验证
             val localUser = userDao.getUserByUsername(account)
-            if (localUser != null && localUser.password == password) {
+            val token = TokenManager.getAccessToken(context)
+            if (token!=null&&localUser != null && localUser.password == password) {
                 _loginState.value = LoginState.Success(localUser.id)
                 return@launch
             }

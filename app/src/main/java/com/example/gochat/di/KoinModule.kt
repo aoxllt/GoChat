@@ -82,6 +82,6 @@ val appModule = module {
         PasswdchangeViewModel(get())
     }
     viewModel {
-        LoginViewModel(get(),get(),get())
+        LoginViewModel(get(),get(),get(),androidContext())
     }
 }

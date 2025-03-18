@@ -38,9 +38,9 @@ object TokenManager {
     }
 
     @Synchronized
-    fun getUserId(context: Context): Int? {
+    fun getUserId(context: Context): Int {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return if (prefs.contains(KEY_USER_ID)) prefs.getInt(KEY_USER_ID, 0) else null
+        return prefs.getInt(KEY_USER_ID, 0)
     }
 
     @Synchronized

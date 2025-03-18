@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/chatListFragment">
 
     <fragment
         android:id="@+id/chatListFragment"
         android:name="com.example.gochat.ui.chat.ChatListFragment"
-        android:label="聊天" >
+        android:label="聊天"
+        tools:layout="@layout/fragment_chat_list">
         <action
             android:id="@+id/action_chatListFragment_to_friendListFragment"
             app:destination="@id/friendListFragment" />
@@ -19,19 +21,23 @@
     <fragment
         android:id="@+id/friendListFragment"
         android:name="com.example.gochat.ui.friend.FriendListFragment"
-        android:label="好友" >
+        android:label="好友"
+        tools:layout="@layout/fragment_friend_list">
         <action
             android:id="@+id/action_friendListFragment_to_chatListFragment"
             app:destination="@id/chatListFragment" />
         <action
             android:id="@+id/action_friendListFragment_to_myFragment"
             app:destination="@id/myFragment" />
+        <action
+            android:id="@+id/action_friendListFragment_to_addFriendFragment"
+            app:destination="@id/addFriendFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/myFragment"
         android:name="com.example.gochat.ui.my.MyFragment"
-        android:label="我的" >
+        android:label="我的">
         <action
             android:id="@+id/action_myFragment_to_chatListFragment"
             app:destination="@id/chatListFragment" />
@@ -39,11 +45,9 @@
             android:id="@+id/action_myFragment_to_friendListFragment"
             app:destination="@id/friendListFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/addFriendFragment"
         android:name="com.example.gochat.ui.friend.AddFriendFragment"
         android:label="添加好友" />
-    <action
-        android:id="@+id/action_chatListFragment_to_addFriendFragment"
-        app:destination="@id/addFriendFragment" />
 </navigation>

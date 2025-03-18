@@ -36,5 +36,5 @@ data class User(
     val createdAt: Long = System.currentTimeMillis(),
 
     @ColumnInfo(name = "status")
-    val status: UserStatus = UserStatus.ACTIVE
+    val status: UserStatus = UserStatus.ACTIVE,
 )
