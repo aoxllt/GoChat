@@ -2,11 +2,14 @@ package com.example.myapp.di
 
 import android.provider.Settings
 import com.example.gochat.api.PasswdchangeRequest
+import com.example.gochat.config.config
 import com.example.gochat.data.ApiService
 import com.example.gochat.data.database.AppDatabase
+import com.example.gochat.data.repository.UserInfoRepository
 import com.example.gochat.data.repository.UserRepository
 import com.example.gochat.viewmodel.CaptchViewModel
 import com.example.gochat.viewmodel.LoginViewModel
+import com.example.gochat.viewmodel.MyViewModel
 import com.example.gochat.viewmodel.PasswdchangeViewModel
 import com.example.gochat.viewmodel.PasswdforgotViewModel
 import com.example.gochat.viewmodel.UseraddViewModel
@@ -47,7 +50,7 @@ val appModule = module {
             .writeTimeout(30, TimeUnit.SECONDS)   // 写入超时：30秒
             .build()
         Retrofit.Builder()
-            .baseUrl("http://10.22.75.168:8000/")
+            .baseUrl(config.BACKEND_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -57,6 +60,9 @@ val appModule = module {
     // Repository
     single {
         UserRepository(get(), get(),get(),androidContext())
+    }
+    single {
+        UserInfoRepository(androidContext(), get(),get())
     }
 
     // Device ID（提取为单独的 single 定义，避免重复计算）
@@ -84,4 +90,5 @@ val appModule = module {
     viewModel {
         LoginViewModel(get(),get(),get(),androidContext())
     }
+    viewModel { MyViewModel(get(), get(),androidContext()) }
 }

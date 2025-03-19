@@ -50,7 +50,7 @@ interface ApiService {
     @POST("auth/profile")
     suspend fun getUserProfile(
         @Header("Authorization") token: String
-    ): Response<UserProfileResponse>
+    ): Response<ResponseBody>
 
     // 新增更新用户资料的接口
     @POST("auth/profile/update")

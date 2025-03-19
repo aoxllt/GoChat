@@ -16,7 +16,7 @@ import com.example.gochat.data.database.entity.UserInfo
 
 @Database(
     entities = [User::class, UserInfo::class, Friend::class,Chat::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -35,7 +35,8 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "gochat_database"
-                ).build()
+                ).fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

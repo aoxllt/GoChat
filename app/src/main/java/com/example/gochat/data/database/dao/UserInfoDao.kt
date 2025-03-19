@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.gochat.data.database.entity.UserInfo
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserInfoDao {
@@ -30,4 +31,11 @@ interface UserInfoDao {
     // 更新最后登录时间
     @Query("UPDATE user_info SET last_login_time = :time WHERE id = :id")
     suspend fun updateLastLoginTime(id: Int, time: String = java.time.Instant.now().toString())
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdate(userInfo: UserInfo)
+
+
+    @Query("SELECT * FROM user_info WHERE id = :userId")
+    fun getUserInfoFlow(userId: Int): Flow<UserInfo?>
 }
