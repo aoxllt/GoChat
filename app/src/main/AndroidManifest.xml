@@ -41,12 +41,16 @@
         <activity
             android:name=".ui.user.UserinfoaddActivity"
             android:exported="true" />
-        <activity android:name=".ui.main.HomeActivity" />
         <activity
             android:name=".ui.user.PasswdForgotActivity"
             android:exported="true" />
         <activity
             android:name=".ui.user.PasswdChangeActivity"
             android:exported="true" />
+        <activity
+            android:windowSoftInputMode="adjustNothing"
+            android:name=".ui.main.HomeActivity"
+            android:exported="true"
+            tools:ignore="DuplicateActivity" />
     </application>
 </manifest>

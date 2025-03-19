@@ -1,103 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:layout_height="match_parent">
 
-<!--    &lt;!&ndash; 标题栏 &ndash;&gt;-->
-<!--    <LinearLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:background="#075E54"-->
-<!--        android:padding="8dp">-->
+    <!-- 顶部标题栏 -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/backButton"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:src="@android:drawable/ic_menu_back"-->
-<!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--            android:contentDescription="返回" />-->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#87CEEB">
 
-<!--        <TextView-->
-<!--            android:id="@+id/chatTitle"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="聊天对象"-->
-<!--            android:textSize="18sp"-->
-<!--            android:textColor="#FFFFFF"-->
-<!--            android:gravity="center"-->
-<!--            tools:text="聊天对象" />-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/moreButton"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:src="@android:drawable/ic_menu_more"-->
-<!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--            android:contentDescription="更多" />-->
-<!--    </LinearLayout>-->
 
-<!--    &lt;!&ndash; 聊天记录列表 &ndash;&gt;-->
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/chatDetailRecyclerView"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:layout_weight="1"-->
-<!--        android:padding="8dp"-->
-<!--        android:clipToPadding="false"-->
-<!--        android:transcriptMode="alwaysScroll"-->
-<!--        tools:listitem="@layout/item_chat_message" />-->
+                <!-- 头像 -->
+                <ImageView
+                    android:id="@+id/friendAvatar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:clickable="true"
+                    android:contentDescription="好友头像"
+                    android:focusable="true"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_default_avatar"
+                    tools:ignore="TouchTargetSizeCheck" />
 
-<!--    &lt;!&ndash; 表情选择器（默认隐藏） &ndash;&gt;-->
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/emojiPicker"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:visibility="gone"-->
-<!--        android:background="#FFFFFF"-->
-<!--        android:padding="8dp"-->
-<!--        tools:visibility="visible" />-->
+                <!-- 聊天标题 -->
+                <TextView
+                    android:id="@+id/chatTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="聊天"
+                    android:textSize="18sp"
+                    android:textColor="@android:color/white"
+                    android:layout_marginStart="8dp" />
 
-<!--    &lt;!&ndash; 输入区域 &ndash;&gt;-->
-<!--    <LinearLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        android:padding="8dp"-->
-<!--        android:background="#FFFFFF">-->
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
 
-<!--        <ImageButton-->
-<!--            android:id="@+id/emojiButton"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--            android:contentDescription="表情"-->
-<!--            android:src="@android:drawable/ic_menu_emoticons" />-->
+    <!-- 聊天消息列表 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chatDetailRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_marginBottom="80dp" />
 
-<!--        <EditText-->
-<!--            android:id="@+id/chatInput"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_weight="1"-->
-<!--            android:background="@drawable/edittext_border"-->
-<!--            android:hint="输入消息..."-->
-<!--            android:padding="8dp"-->
-<!--            android:textColor="#333333"-->
-<!--            android:textSize="16sp" />-->
+    <!-- 输入区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="#FFFFFF">
 
-<!--        <Button-->
-<!--            android:id="@+id/sendButton"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="发送"-->
-<!--            android:textColor="#FFFFFF"-->
-<!--            android:background="#128C7E"-->
-<!--            android:padding="8dp"-->
-<!--            android:layout_marginStart="8dp" />-->
-<!--    </LinearLayout>-->
-</LinearLayout>
+        <ImageButton
+            android:id="@+id/emojiButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_emoji"
+            tools:ignore="TouchTargetSizeCheck" />
+
+        <EditText
+            android:id="@+id/chatInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="输入消息"
+            android:minHeight="48dp" />
+
+        <ImageButton
+            android:id="@+id/sendButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="TODO"
+            android:src="@drawable/ic_send"
+            tools:ignore="TouchTargetSizeCheck" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
