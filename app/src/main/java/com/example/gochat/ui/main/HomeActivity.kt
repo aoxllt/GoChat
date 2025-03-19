@@ -1,8 +1,12 @@
 package com.example.gochat.ui.main
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.fragment.NavHostFragment
@@ -20,16 +24,8 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 设置 Toolbar
-        setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = ""
 
-        // 设置导航
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
-
-        // 将 BottomNavigationView 与 NavController 绑定
-        binding.bottomNavigation.setupWithNavController(navController)
 
         // 监听导航变化，控制 AppBarLayout 可见性
         navController.addOnDestinationChangedListener { _: NavController, destination: NavDestination, _: Bundle? ->
@@ -44,12 +40,44 @@ class HomeActivity : AppCompatActivity() {
         }
 
         // 添加好友按钮点击事件
-        binding.addFriendButton.setOnClickListener {
-            // TODO: 实现添加好友逻辑，例如导航到添加好友页面
+        binding.actionFriendListFragmentToAddFriendFragment.setOnClickListener {
+            navController.navigate(R.id.action_friendListFragment_to_addFriendFragment)
         }
     }
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    // 设置沉浸式状态栏
+    private fun setupStatusBar() {
+        // 使状态栏透明
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+
+        // 设置状态栏图标为深色（适用于浅色背景）
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.isAppearanceLightStatusBars = true
+    }
+
+    // 获取状态栏高度的辅助函数
+    private fun getStatusBarHeight(): Int {
+        var result = 0
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            result = resources.getDimensionPixelSize(resourceId)
+        }
+        return result
+    }
+
+    // 获取 ActionBar 高度的辅助函数
+    private fun getActionBarHeight(): Int {
+        var result = 0
+        val typedArray = theme.obtainStyledAttributes(intArrayOf(android.R.attr.actionBarSize))
+        result = typedArray.getDimensionPixelSize(0, 0)
+        typedArray.recycle()
+        return result
     }
 }

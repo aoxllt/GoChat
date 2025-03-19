@@ -5,84 +5,84 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="#F5F5F5"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="60dp"
+        android:background="#87CEEB"
+        android:fitsSystemWindows="false">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="#87CEEB"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
             app:titleTextColor="@android:color/white"
             android:contentInsetStart="0dp"
             android:contentInsetLeft="0dp">
 
             <LinearLayout
+                android:id="@+id/toolbarContent"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingStart="0dp"
-            android:paddingEnd="0dp">
+                android:gravity="center_vertical">
 
                 <ImageView
                     android:id="@+id/avatarImage"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:layout_marginEnd="1dp"
-                    android:contentDescription="个人头像"
-                    android:scaleType="centerCrop"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="User avatar"
+                    android:scaleType="fitCenter"
                     android:src="@drawable/ic_default_avatar" />
 
                 <ImageView
-                android:id="@+id/statusIndicator"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_gravity="bottom"
-                android:layout_marginStart="-16dp"
-                android:layout_marginBottom="2dp"
-                android:src="@drawable/ic_status_online"
-                android:contentDescription="在线状态" />
-        </LinearLayout>
+                    android:id="@+id/statusIndicator"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="-20dp"
+                    android:layout_marginBottom="4dp"
+                    android:src="@drawable/ic_status_online"
+                    android:contentDescription="Online status" />
+            </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/action_friendListFragment_to_addFriendFragment"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="end|center_vertical"
-            android:layout_marginEnd="12dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="添加好友"
-            android:minWidth="40dp"
-            android:minHeight="40dp"
-            android:padding="4dp"
-            android:src="@drawable/add"
-            android:scaleType="fitCenter"
-            tools:ignore="TouchTargetSizeCheck" />
+            <ImageButton
+                android:id="@+id/action_friendListFragment_to_addFriendFragment"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Add friend"
+                android:padding="4dp"
+                android:src="@drawable/add"
+                android:scaleType="fitCenter" />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
 
-    </androidx.appcompat.widget.Toolbar>
-</com.google.android.material.appbar.AppBarLayout>
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:navGraph="@navigation/nav_graph" />
 
-<androidx.fragment.app.FragmentContainerView
-android:id="@+id/nav_host_fragment"
-android:name="androidx.navigation.fragment.NavHostFragment"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-app:layout_behavior="@string/appbar_scrolling_view_behavior"
-app:navGraph="@navigation/nav_graph" />
-
-<com.google.android.material.bottomnavigation.BottomNavigationView
-android:id="@+id/bottom_navigation"
-android:layout_width="match_parent"
-android:layout_height="wrap_content"
-android:layout_gravity="bottom"
-android:background="#87CEEB"
-app:itemIconTint="@drawable/nav_item_color_selector"
-app:itemTextColor="@drawable/nav_item_color_selector"
-app:menu="@menu/bottom_navigation_menu" />
-
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#87CEEB"
+        android:fitsSystemWindows="true"
+        app:itemIconTint="@drawable/nav_item_color_selector"
+        app:itemTextColor="@drawable/nav_item_color_selector"
+        app:menu="@menu/bottom_navigation_menu"
+        android:elevation="8dp" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
